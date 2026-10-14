@@ -1,4 +1,4 @@
-﻿"""src/run_sql.py -- Executes analytical SQL queries Q1 to Q7 from sql/queries.sql against data/instamart.db."""
+"""src/run_sql.py -- Executes analytical SQL queries Q1 to Q7 from sql/queries.sql against data/instamart.db."""
 import os
 import sys
 sys.path.insert(0, os.path.abspath("."))
@@ -13,9 +13,9 @@ def run_queries():
     with open(os.path.join("sql", "queries.sql"), "r", encoding="utf-8-sig") as f:
         sql_text = f.read()
         
-    lines = [line for line in sql_text.splitlines() if not line.strip().startswith("--")]
-    clean_text = "\n".join(lines)
-    clean_text = re.sub(r"--.*$", "", clean_text, flags=re.MULTILINE)
+    # Remove line and inline comments without using dollar signs
+    clean_lines = [line.split("--")[0].rstrip() for line in sql_text.splitlines()]
+    clean_text = "\n".join(clean_lines)
     
     queries = [q.strip() for q in clean_text.split(";") if q.strip()]
     

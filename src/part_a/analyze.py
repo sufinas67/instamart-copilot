@@ -12,10 +12,9 @@ def run_analysis():
     with open(os.path.join("sql", "queries.sql"), "r", encoding="utf-8-sig") as f:
         sql_text = f.read()
     
-    # Strip comments first before splitting by semicolon
-    lines = [line for line in sql_text.splitlines() if not line.strip().startswith("--")]
-    clean_text = "\n".join(lines)
-    clean_text = re.sub(r"--.*$", "", clean_text, flags=re.MULTILINE)
+    # Strip comments first before splitting by semicolon without using dollar signs
+    clean_lines = [line.split("--")[0].rstrip() for line in sql_text.splitlines()]
+    clean_text = "\n".join(clean_lines)
     
     queries = [q.strip() for q in clean_text.split(";") if q.strip()]
             
