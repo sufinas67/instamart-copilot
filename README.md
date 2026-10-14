@@ -62,7 +62,7 @@ python src/run_part_d.py
 
 ---
 
-## Part A — Data Foundation: Clean, Store, Query
+## Part A - Data Foundation: Clean, Store, Query
 
 ### 1. Raw Data Audit
 Loading raw tables (`customers.csv`, `products.csv`, `orders.csv`, and `tickets.csv` with `keep_default_na=False`) revealed substantial anomalies, unparseable entries, and duplicate records across tables:
@@ -77,7 +77,7 @@ Loading raw tables (`customers.csv`, `products.csv`, `orders.csv`, and `tickets.
 | Negative `delivery_minutes` entries | 106 | 106 | PASS |
 | Blank `delivery_minutes` entries | 2,541 | 2,541 | PASS |
 | Blank `age` in `customers.csv` | 61 | 61 | PASS |
-| Age values outside 10–100 | 6 | 6 | PASS |
+| Age values outside 10-100 | 6 | 6 | PASS |
 | Distinct raw city spellings | 24 | 24 | PASS |
 | Distinct non-blank raw gender spellings | 10 | 10 | PASS |
 | Blank `gender` entries in `customers.csv` | 30 | 30 | PASS |
@@ -87,7 +87,7 @@ Loading raw tables (`customers.csv`, `products.csv`, `orders.csv`, and `tickets.
 #### Customers Table
 1. **City Standardisation**: Stripped leading/trailing whitespace and applied title-casing. Changed 714 raw values to collapse 24 messy spellings into exactly six valid metro cities (Pune: 227, Delhi: 210, Bengaluru: 197, Chennai: 191, Hyderabad: 191, Mumbai: 184).
 2. **Gender Mapping**: Standardised 10 distinct spellings to `male` (560), `female` (610), or `unknown` (30). Changed 625 values.
-3. **Age Validation & City Median Imputation**: Coerced 6 impossible ages (outside 10–100: -4, 0, 150, 200, 280, 999) to NaN. Filled all 67 missing ages using city-level median age via `groupby('city')['age'].transform()`. Resulted in 0 missing ages, with all ages strictly bounded between 18 and 60.
+3. **Age Validation & City Median Imputation**: Coerced 6 impossible ages (outside 10-100: -4, 0, 150, 200, 280, 999) to NaN. Filled all 67 missing ages using city-level median age via `groupby('city')['age'].transform()`. Resulted in 0 missing ages, with all ages strictly bounded between 18 and 60.
 4. **Signup Date**: Parsed ISO strings to standard datetime format (`YYYY-MM-DD`).
 
 #### Orders Table (Executed in Exact Sequence)
@@ -108,31 +108,31 @@ Executed against `data/instamart.db`:
 - **Q4 (LEFT JOIN)**: Joined `customers` to completed `orders` to find inactive signups. Returns **25 customers** with zero completed orders.
 - **Q5 (Common Table Expression)**: Computed customer spend and population average (INR 2,552.06); main query returned **550 customers** spending above average.
 - **Q6 (Ranking Window Functions)**: Computed customer total spend and ranked using `RANK()`, `DENSE_RANK()`, and `ROW_NUMBER()` partitioned by city. Top spenders per city:
-  - Bengaluru: `C0082` (INR 12,856.20)
-  - Chennai: `C0930` (INR 10,151.40)
-  - Delhi: `C0291` (INR 13,742.60)
-  - Hyderabad: `C0743` (INR 12,730.05)
-  - Mumbai: `C0693` (INR 14,766.55)
-  - Pune: `C0426` (INR 10,377.10)
+ - Bengaluru: `C0082` (INR 12,856.20)
+ - Chennai: `C0930` (INR 10,151.40)
+ - Delhi: `C0291` (INR 13,742.60)
+ - Hyderabad: `C0743` (INR 12,730.05)
+ - Mumbai: `C0693` (INR 14,766.55)
+ - Pune: `C0426` (INR 10,377.10)
   *Ties Explanation*: When multiple customers within a city share identical spend totals, `RANK()` assigns them the identical rank and skips subsequent ranks, whereas `ROW_NUMBER()` assigns strictly distinct sequential integers, causing exactly 8 tied rows to diverge between the two functions.
 - **Q7 (Running Total)**: Daily revenue running total using `SUM(revenue) OVER (ORDER BY day)`. Returns **183 daily rows** (2025-04-01 to 2025-09-30), culminating at **INR 2,998,668.80**.
 
 ### 4. Pandas Cross-Check and Exploratory Data Analysis
 - **Cross-Check**: `pd.pivot_table(comp, values='order_amount', index='city', columns='category', aggfunc='sum', margins=True)` produced a grand total of **INR 2,998,668.80**, matching SQL Q2.
 - **City Aggregations**:
-  - Bengaluru: sum INR 523,643.40, mean INR 276.47, count 1,894
-  - Chennai: sum INR 463,629.15, mean INR 272.72, count 1,700
-  - Delhi: sum INR 502,829.80, mean INR 243.62, count 2,064
-  - Hyderabad: sum INR 528,589.90, mean INR 284.95, count 1,855
-  - Mumbai: sum INR 479,058.50, mean INR 297.00, count 1,613
-  - Pune: sum INR 500,918.05, mean INR 252.48, count 1,984
+ - Bengaluru: sum INR 523,643.40, mean INR 276.47, count 1,894
+ - Chennai: sum INR 463,629.15, mean INR 272.72, count 1,700
+ - Delhi: sum INR 502,829.80, mean INR 243.62, count 2,064
+ - Hyderabad: sum INR 528,589.90, mean INR 284.95, count 1,855
+ - Mumbai: sum INR 479,058.50, mean INR 297.00, count 1,613
+ - Pune: sum INR 500,918.05, mean INR 252.48, count 1,984
 - **Order Amount Distribution**: Mean INR 269.91, Median INR 135.00, Skewness 4.61 (heavily right-skewed). Q1 is INR 64.80, Q3 is INR 297.00, IQR is INR 232.20. Upper fence (Q3Q3 + 1.5 * IQR) is INR 645.30 with 897 outliers above and 0 below.
 - **Four-Question Analysis (<= 200 words)**:
   This dataset captures quick-commerce grocery and electronics transactions across six Indian metropolitan branches. Spend is strongly right-skewed with a mean of INR 269.91 and median of INR 135.00, driven by routine everyday low-ticket purchases alongside occasional high-ticket electronics. Setting 1.5xIQR fences identifies 897 high-value purchases above INR 645.30; these represent valid premium electronic items rather than recording errors. Across completed orders, linear associations are weak. The largest correlation in absolute value is between order_amount and discount_pct at -0.095, followed by order_amount and quantity at +0.087, while delivery_minutes is uncorrelated (-0.003). Crucially, empirical correlation of this small magnitude does not establish causation.
 
 ---
 
-## Part B — Customer Segments and Lapse Prediction
+## Part B - Customer Segments and Lapse Prediction
 
 ### 1. RFM Table (Snapshot: 2025-10-01 00:00:00)
 Calculated over 1,175 customers with completed orders:
@@ -186,23 +186,23 @@ Oversampled lapsed training rows with replacement (`random_state=42`) to balance
 
 ---
 
-## Part C — Support Ticket Triage with Guardrails
+## Part C - Support Ticket Triage with Guardrails
 
 ### 1. Input Guardrails and PII Sanitisation
 Read 164 raw tickets with `keep_default_na=False`:
 - **Guardrails**: Filtered 4 empty tickets (`skipped_empty`) and 4 excessively long tickets (`flagged_long`, 734 estimated tokens > 400). Neither group triggered model calls.
 - **PII Redaction**: Applied strict regex transformations before prompt construction:
-  - Email: `[\w.+-]+@[\w-]+\.[\w.]+` \rightarrow `[EMAIL]` (55 replacements)
-  - Phone: `\b[6-9]\d{9}\b` \rightarrow `[PHONE]` (91 replacements)
-  - Order ID: `ORD-\d{6}` \rightarrow `[ORDER_ID]` (132 replacements)
-  - Total substitutions: **278**. Asserted that 0 unmasked instances remained across all tickets.
+ - Email: `[\w.+-]+@[\w-]+\.[\w.]+` \rightarrow `[EMAIL]` (55 replacements)
+ - Phone: `\b[6-9]\d{9}\b` \rightarrow `[PHONE]` (91 replacements)
+ - Order ID: `ORD-\d{6}` \rightarrow `[ORDER_ID]` (132 replacements)
+ - Total substitutions: **278**. Asserted that 0 unmasked instances remained across all tickets.
 
 ### 2. Resilient Calls & Output Validation
 - **TransientLLMError Resilience**: Wrapped mock calls in exponential backoff with jitter (`BASE_DELAY * 2**n * uniform(0.9, 1.15)`). Simulated 19 transient errors across 156 calls; 100% recovered on retry 0 with zero permanent failures.
 - **Output Validation**:
-  - `classified_json`: 135 valid JSON outputs with allowed categories.
-  - `classified_keyword`: 12 non-JSON chatty replies validated via regex word extraction.
-  - `flagged_invalid_output`: 9 out-of-domain outputs (e.g., category "shipping") safely routed to human review.
+ - `classified_json`: 135 valid JSON outputs with allowed categories.
+ - `classified_keyword`: 12 non-JSON chatty replies validated via regex word extraction.
+ - `flagged_invalid_output`: 9 out-of-domain outputs (e.g., category "shipping") safely routed to human review.
 
 ### 3. Zero-Shot vs Few-Shot Comparison
 
@@ -225,14 +225,14 @@ technical         10         0      0         29
 ### 4. Token Budget & Final Segment-Aware Routing
 - **Token Budget Demo**: Running zero-shot with `TOKEN_BUDGET = 6000` halted at ticket 98, marking **66 tickets** as `budget_exhausted` (saved to `outputs/triage_budget_demo.csv`).
 - **Final Routing (`outputs/triage_results.csv`, 164 rows)**: Merged with `outputs/customer_segments.csv`:
-  - `support_queue` (NORMAL priority): 102 tickets
-  - `security_team` (HIGH priority): 34 tickets (all fraud cases)
-  - `human_review` (NORMAL priority): 17 tickets (4 empty, 4 long, 9 invalid output)
-  - `premium_desk` (HIGH priority): 11 tickets (non-fraud issues from Premium customers)
+ - `support_queue` (NORMAL priority): 102 tickets
+ - `security_team` (HIGH priority): 34 tickets (all fraud cases)
+ - `human_review` (NORMAL priority): 17 tickets (4 empty, 4 long, 9 invalid output)
+ - `premium_desk` (HIGH priority): 11 tickets (non-fraud issues from Premium customers)
 
 ---
 
-## Part D — Policy RAG Assistant and Refund Agent
+## Part D - Policy RAG Assistant and Refund Agent
 
 ### 1. Document Chunking & TF-IDF Retrieval
 - Split five policy documents into 40-word chunks with 10-word overlap (step 30 words), producing **15 chunks** (`refund_policy.txt`: 4, `delivery_policy.txt`: 3, `escalation_policy.txt`: 3, `payment_policy.txt`: 3, `privacy_policy.txt`: 2).
@@ -268,9 +268,9 @@ Logged all runs to `outputs/agent_runs.jsonl` and ledger events to `outputs/refu
 - **Token Limit Demo**: Running S1 with `token_limit=200` halted immediately before executing the requested tool with status `FALLBACK_TOKEN_LIMIT`.
 - **Timeout Demo**: Running S1 with `time_limit_seconds=0.0` stopped before the first model call with status `FALLBACK_TIMEOUT`.
 - **Crash and Resume Demonstration (S1)**:
-  - Phase 1: Executed tools `['get_order', 'search_policy']`, saved state checkpoint to `state/`, and simulated process termination.
-  - Phase 2: Called `resume_agent(run_id)`. The agent loaded the checkpoint and executed remaining tools `['calculate_refund', 'issue_refund']`.
-  - Result: Across both phases, exactly four unique tools were executed in order (`get_order` \rightarrow `search_policy` \rightarrow `calculate_refund` \rightarrow `issue_refund`), 0 tools were repeated, and the final status was `REFUND` (INR 128.25).
+ - Phase 1: Executed tools `['get_order', 'search_policy']`, saved state checkpoint to `state/`, and simulated process termination.
+ - Phase 2: Called `resume_agent(run_id)`. The agent loaded the checkpoint and executed remaining tools `['calculate_refund', 'issue_refund']`.
+ - Result: Across both phases, exactly four unique tools were executed in order (`get_order` \rightarrow `search_policy` \rightarrow `calculate_refund` \rightarrow `issue_refund`), 0 tools were repeated, and the final status was `REFUND` (INR 128.25).
 
 ### 5. ReAct versus Plan-and-Execute Comparison (<= 250 words)
 Our measured ReAct implementation adapts dynamically to live execution feedback, requiring 5 model calls for full refund approvals (S1, S2, S3), 4 calls for on-time delivery rejections (S4), 3 calls for cancelled orders (S5), and only 2 calls when an order is missing (S6). In total, ReAct uses between 76 and 616 tokens for typical scenarios. Conversely, a plan-and-execute architecture requests a full DAG of planned tool steps up front in a single model call, executing tools sequentially and replanning only upon exceptions.
@@ -281,6 +281,6 @@ While plan-and-execute reduces total model invocations from 5 to 1 or 2 in happy
 
 ## Limitations and Next Steps
 
-1. **Post-Hoc Premium Label Limitation**: The `is_premium` flag in `outputs/retention_list.csv` is derived from the full six-month RFM clustering window (April–September 2025). Because the September window also defines the ground-truth lapse target, the retention list is illustrative and does not constitute a leakage-free predictive evaluation. In production, segmentation must be computed strictly on historical data prior to the predictive observation window.
+1. **Post-Hoc Premium Label Limitation**: The `is_premium` flag in `outputs/retention_list.csv` is derived from the full six-month RFM clustering window (April-September 2025). Because the September window also defines the ground-truth lapse target, the retention list is illustrative and does not constitute a leakage-free predictive evaluation. In production, segmentation must be computed strictly on historical data prior to the predictive observation window.
 2. **Offline Stand-In vs Hosted LLM**: The current pipeline runs offline against `mock_llm.py`. Transitioning to production will require integrating hosted models (e.g., Gemini 1.5 Pro) with structured JSON decoding, tool function schemas, and secrets managed via `.env` (listed in `.gitignore`).
 3. **Semantic Embedding RAG**: The current policy retrieval assistant relies on lexical TF-IDF. Upgrading to dense neural embeddings (e.g., Sentence-Transformers) will overcome vocabulary mismatch and improve cross-lingual policy resolution.
